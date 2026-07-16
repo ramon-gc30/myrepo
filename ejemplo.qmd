@@ -1,0 +1,7 @@
+---
+title: "Ejemplo"
+author: "Ramón GC"
+format: html
+---
+
+Hola mundo
