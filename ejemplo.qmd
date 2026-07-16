@@ -2,6 +2,8 @@
 title: "Ejemplo"
 author: "Ramón GC"
 format: html
+date: today
+output: github_document
 ---
 
 Hola mundo
