@@ -23,4 +23,16 @@ De esta manera, se genera un archivo GitHub Flavored Markdown (GFM) [Markdown co
 
 Se cambia formato de salida y se valida.
 
+Listo! Sí se genera el archivo formato `gfm`.
+
+Ahora, por último, se genera un bloque de código
+
+```{r}
+library(tidyverse)
+
+datasets::cars |> 
+  count()
+```
+
+
 
