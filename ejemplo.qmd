@@ -2,8 +2,7 @@
 title: "Ejemplo"
 author: "Ramón GC"
 date: today
-format:
-  gfm: default
+format: gfm
 ---
 
 Hola mundo.
@@ -18,6 +17,15 @@ format:
 ```
 
 La fuente es el siguiente: <https://quarto.org/docs/output-formats/gfm.html> 
+
+Dicha página menciona que la sintaxis es:
+
+```
+---
+title: "My Project"
+format: gfm
+---
+```
 
 De esta manera, se genera un archivo GitHub Flavored Markdown (GFM) [Markdown con formato GitHub]. Véase <https://github.github.com/gfm/> para más información.
 
@@ -34,5 +42,78 @@ datasets::cars |>
   count()
 ```
 
+Por otro lado, el capítulo 19 explica cómo generar un documento presentable a partir de un archivo `.R` de la siguiente manera:
+
+1. Transformar un archivo R Markdown a tipo R:
+  * Todo aquello que no sea código añadir al inicio `#' `, comentario estilo `roxygen` **PENDIENTE**
+  * Cambiar sintaxis de las propiedades de los bloques de código mediante `#+ `
+
+2. Generar (renderizar) el archivo Markdown y HTML
+
+En mi caso, lo hice a partir de este documento tipo Quarto, pero solamente genera el archivo HTML no el archivo intermedio legible para GitHub ¿por qué?
+
+En el libro existen distintas maneras de renderizar (generar) el archivo R, para el caso de la consola se puede utilizar
+
+```{{r}}
+rmarkdown::render("foo.R")
+```
+
+Sin embargo, el documento está generado en Quarto. Existe la función `quarto_render` <https://quarto-dev.github.io/quarto-r/reference/quarto_render.html> del paquete `quarto` <https://quarto-dev.github.io/quarto-r/index.html> donde menciona que para su instalación se requiere instalar la terminal de Quarto:
+
+"Antes de utilizar el paquete Quarto R, debe instalar la interfaz de línea de comandos de Quarto desde <https://quarto.org/docs/get-started/>"
+
+Que digamos es similar al Git Bash pero para poder ejecutar instrucciones de Quarto no en la terminal sino en R. No está instalado. 
+
+Anteriormente se tenía en el encabezado YAML
+
+```
+---
+format:
+  gfm: default
+---
+```
+
+Se cambió a 
+
+```
+---
+format: gfm
+---
+```
+
+Pero sigue sin generar el archivo intermedio gfm
+
+De acuerdo a la IA, si se especifica la generación del archivo gfm mediante `quarto::quarto_render`. Por lo tanto, se decide instalar la interfaz de la línea de comandos de Quarto a través del siguiente enlace: <https://quarto.org/docs/get-started/> 
 
 
+Como tal no aparece ningún programa como Git Bash. 
+
+Ahora se procede a instalar `quarto` como se especifica en <https://quarto-dev.github.io/quarto-r/index.html> 
+
+```{r}
+system.file(package = "quarto")
+```
+
+Se valida si es la versión actual
+
+```{r}
+library(pacman)
+# para generar archivos
+options(repos = c(CRAN = "https://cloud.r-project.org"))
+# getOption("repos")
+pacman::p_version_diff("quarto")
+```
+
+Ahora bien, se instala
+
+```{r}
+library(quarto)
+```
+
+De acuerdo a `?quarto_render` se puede especificar el archivo de entrada, el formato de salida, entre otros. Se valida con formato de salida gfm (markdown con formato github)
+
+```{r}
+quarto_render(input = "ejemplo2.R", output_format = "gfm")
+```
+
+En efecto! Genera el archivo intermedio. Ahora se valida en GitHub.
