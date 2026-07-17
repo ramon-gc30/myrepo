@@ -117,3 +117,19 @@ quarto_render(input = "ejemplo2.R", output_format = "gfm")
 ```
 
 En efecto! Genera el archivo intermedio. Ahora se valida en GitHub.
+
+Fuentes
+
+<https://quarto-dev.github.io/quarto-r/index.html>
+
+<https://quarto-dev.github.io/quarto-r/reference/index.html>
+
+<https://quarto.org/docs/get-started/>
+
+<https://quarto.org/docs/output-formats/gfm.html>
+
+<https://github.github.com/gfm/>
+
+<https://quarto.org/docs/reference/formats/markdown/gfm.html>
+
+<https://quarto-dev.github.io/quarto-r/reference/quarto_render.html> 
