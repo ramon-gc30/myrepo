@@ -1,0 +1,36 @@
+#'---
+#' title: "Ejemplo"
+#' author: "Ramón GC"
+#' date: today
+#' format: gfm
+#' ---
+
+#' Hola mundo.
+
+#' Se siguen los pasos descritos en el capítulo 18 de Happy Git and GitHub, mediante la instrucción `output: github_document`, pero no se genera el archivo intermedio mencionado por los autores con extensión `.md`. ¿Será por qué el documento es Quarto y no R Markdown? Se investiga
+
+#' La IA menciona que la sintaxis es el siguiente:
+
+#' ```
+#' format:
+#'   gfm: default
+#' ```
+
+#' La fuente es el siguiente: <https://quarto.org/docs/output-formats/gfm.html> 
+
+#' De esta manera, se genera un archivo GitHub Flavored Markdown (GFM) [Markdown con formato GitHub]. Véase <https://github.github.com/gfm/> para más información.
+
+#' Se cambia formato de salida y se valida.
+
+#' Listo! Sí se genera el archivo formato `gfm`.
+
+#' Ahora, por último, se genera un bloque de código
+
+#+ r
+library(tidyverse)
+
+datasets::cars |> 
+  count()
+
+
+
