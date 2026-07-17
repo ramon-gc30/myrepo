@@ -1,0 +1,167 @@
+---
+title: "Validar la versión de un paquete"
+date: today
+format: html
+---
+
+En este espacio se describirán los distintos modos de validar la versión actual de cualquier paquete de R. Del paquete `base` existen las siguientes funciones:
+
+* `update.packages`: descarga e instala las versiones más recientes de los paquetes instalados,
+* `old.packages`: indica qué paquetes tienen una versión posterior en el repositorio CRAN
+
+Aquellos se hacen de forma agregada, es decir, validan TODOS los paquetes. 
+
+```{r}
+options(repos = c(CRAN = "https://cloud.r-project.org"))
+utils::old.packages()
+```
+
+Cabe mencionar que `update.packages` instala la versión más reciente, pero si arroja error la manera más fácil de solucionarlo es desinstalar los paquetes donde se encuentre el error mediante `remove.packages` y volverlo a instalar con `install.packages`.
+
+Adicionalmente, se puede especificar un subconjunto solamente para el caso de `old.packages`:
+
+"Por defecto, todos los paquetes instalados installed.packages(lib.loc = lib.loc). Se puede especificar un subconjunto; actualmente, este debe estar en el mismo formato (matriz de caracteres) que el devuelto por installed.packages()." `?old.packages`. 
+
+Así, `installed.packages` devuelve la descripción de los paquetes en la ubicación especificada, es decir, requiere la ruta del paquete
+
+```{{r}}
+installed.packages()
+```
+
+Por su parte, `find.package` y `system.file` devuelve la ruta del paquete especificado
+
+```{r}
+find.package(package = "quarto")
+system.file(package = "quarto")
+```
+
+Por tanto, en teoría si pongo la ruta de dicho paquete en `installed.packages` devolverá su información 
+
+```{r}
+installed.packages(lib.loc = find.package(package = "quarto"))
+installed.packages(lib.loc = system.file(package = "quarto"))
+```
+
+```{r}
+.libPaths()
+```
+
+Esta función devuelve la ruta donde están ubicados los paquetes instalados.
+
+Supuestamente los argumentos `priority` y `subarch` permiten seleccionar paquetes.
+
+```{{r}}
+installed.packages(priority = "tidyverse")
+installed.packages(subarch = "tidyverse")
+```
+
+Pero no es el caso ¿por qué?
+
+```{r}
+old.packages(lib.loc = find.package(package = "quarto"))
+```
+
+Esto se puede solucionar con el paquete `pacman`, mediante la función `p_version`
+
+```{r}
+library(pacman)
+pacman::p_version("quarto")
+pacman::p_version_cran("quarto")
+pacman::p_version_diff("quarto")
+```
+
+En específico, `p_version_diff` valide si existen discrepancias entre las versiones del paquete instalado y la más reciente del repositorio CRAN. ¿Cómo sería posible con las funciones precargadas en R?
+
+```{r}
+(.packages())
+```
+
+Dicha función retorna los paquetes utilizados 
+
+Bueno, se valida cuestión con la IA. La propuesta que realiza la IA es comparar la versión del paquete específico mediante `utils::packageVersion` filtrando la lista de paquetes disponibles en el repositorio CRAN mediante `utils::available.packages`
+
+```{r}
+utils::packageVersion(pkg = "quarto")
+# available.packages()
+```
+
+Como sigue
+
+```{{r}}
+# 1. Define el nombre del paquete que deseas validar
+mi_paquete <- "ggplot2"
+
+# 2. Obtén la versión instalada localmente
+version_local <- packageVersion(mi_paquete)
+
+# 3. Obtén la versión disponible en CRAN
+# (Filtramos directo en la consulta para no descargar toda la matriz de CRAN)
+info_cran <- available.packages(filters = list()) 
+version_cran <- as.package_version(info_cran[mi_paquete, "Version"])
+
+# 4. Compara las versiones
+if (version_local == version_cran) {
+  message("✅ Tienes la misma versión que CRAN: ", version_local)
+} else if (version_local < version_cran) {
+  message("⚠️ Tu versión (", version_local, ") está desactualizada. CRAN tiene la: ", version_cran)
+} else {
+  message("🚀 Tu versión (", version_local, ") es más reciente que CRAN (posible versión de desarrollo): ", version_cran)
+}
+
+```
+
+Como se observa, no se realiza de forma directa, hay que crear distintos objetos y realizar una operación condicional. Por tanto, nos quedamos con `pacman` para el caso de un paquete específico y obviamente `old.packages` para el caso general.
+
+Al momento de generar el archivo HTML, arroja el siguiente error
+
+```
+Error in `contrib.url()`:
+! trying to use CRAN without setting a mirror
+```
+
+¿Por qué? De acuerdo a la IA, este error se genera ya que la herramienta que genera el archivo no tiene el enlace del repositorio CRAN, por tanto hay que especificarlo. Se hace explícito con el argumento `repos` y se añade la liga que menciona `?old.packages`: "the URL of a CRAN mirror such as "https://cloud.r-project.org"."
+
+También arroja error con `pacman::p_version_`, pero ahí no se puede hacer explícito el sitio del repositorio. Por tanto, se deja como bloque no ejecutable. Por tanto, se configura dentro de `options`:
+
+```{{r}}
+# Configuramos el espejo global antes de llamar a pacman
+options(repos = c(CRAN = "https://cloud.r-project.org"))
+
+# Ahora pacman sabrá a dónde conectarse y no dará error
+pacman::p_version_cran("ggplot2")
+```
+
+Al parecer en `base::options`, se puede configurar cualquier argumento de cualquier función (disponible). En `?old.packages`, se observa que `repos` es igual a `getOption("repos")`
+
+```{r}
+getOption("repos")
+```
+
+Por tanto, `options` define al valor `CRAN` la liga mencionada
+
+```{r}
+c(CRAN = "https://cloud.r-project.org")
+```
+
+Cada vez aprendo más y desconozco muchísimo más de la programación.
+
+En resumen, 
+
+* Si existe distintas maneras de conocer la versión de un paquete específico instalado: `utils::packageVersion` o bien `pacman::p_version`
+
+* Aunque podría validarse si la versión instalada coincide con la versión más reciente del repositorio CRAN mediante `utils::packageVersion` y `utils::available.packages`, se requiere definir distintos objetos y aplicar una operación condicional. Por tanto, se utiliza `pacman::p_version_diff`
+
+* Para validar el total de paquetes instalados que tienen una versión anterior a la del repositorio, se utiliza `utils::old.packages`, y para descargarlos `utils::update.packages`
+
+Fuentes
+
+<https://www.rdocumentation.org/packages/utils/versions/3.6.2/topics/update.packages>
+
+<https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/system.file> 
+
+<https://cran.r-project.org/web/packages/pacman/refman/pacman.html#p_version> 
+
+<https://www.rdocumentation.org/packages/utils/versions/3.6.2/topics/packageDescription>
+
+<https://www.rdocumentation.org/packages/utils/versions/3.6.2/topics/available.packages>
+
